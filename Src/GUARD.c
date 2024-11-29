@@ -4,14 +4,14 @@
 #define MPU_REGION_NO_ACCESS     (0x00)
 #define MPU_RASR_ENABLE          (1UL << 0)
 
-static void configure_mpu_region(uint32_t base_addr, uint32_t size, uint32_t attributes);
+static void ConfigMPU(uint32_t base_addr, uint32_t size, uint32_t attributes);
 
 void StackGuard_Init(uint32_t guard_size) 
 {
     extern uint32_t _estack;
     uint32_t guard_base = (uint32_t)&_estack - guard_size;
     StackGuard_Disable();
-    configure_mpu_region(guard_base, guard_size, MPU_REGION_NO_ACCESS);
+    ConfigMPU(guard_base, guard_size, MPU_REGION_NO_ACCESS);
     StackGuard_Enable();
 }
 
@@ -36,7 +36,7 @@ void StackGuard_SetHandler(void (*handler)(void))
     }
 }
 
-static void configure_mpu_region(uint32_t base_addr, uint32_t size, uint32_t attributes) 
+static void ConfigMPU(uint32_t base_addr, uint32_t size, uint32_t attributes) 
 {
     MPU->RNR = MPU_REGION_NUMBER;
     MPU->RBAR = base_addr & MPU_RBAR_ADDR_Msk;
