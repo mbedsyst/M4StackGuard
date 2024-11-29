@@ -6,15 +6,6 @@
 
 static void ConfigMPU(uint32_t base_addr, uint32_t size, uint32_t attributes);
 
-void StackGuard_Init(uint32_t guard_size) 
-{
-    extern uint32_t _estack;
-    uint32_t guard_base = (uint32_t)&_estack - guard_size;
-    StackGuard_Disable();
-    ConfigMPU(guard_base, guard_size, MPU_REGION_NO_ACCESS);
-    StackGuard_Enable();
-}
-
 void StackGuard_Enable(void) 
 {
     MPU->CTRL = MPU_CTRL_ENABLE_Msk | MPU_CTRL_PRIVDEFENA_Msk;
@@ -25,6 +16,15 @@ void StackGuard_Enable(void)
 void StackGuard_Disable(void) 
 {
     MPU->CTRL = 0;
+}
+
+void StackGuard_Init(uint32_t guard_size) 
+{
+    extern uint32_t _estack;
+    uint32_t guard_base = (uint32_t)&_estack - guard_size;
+    StackGuard_Disable();
+    ConfigMPU(guard_base, guard_size, MPU_REGION_NO_ACCESS);
+    StackGuard_Enable();
 }
 
 void StackGuard_SetHandler(void (*handler)(void)) 
