@@ -38,6 +38,10 @@ satic void ConfigMPU(uint32_t base_addr, uint32_t size, uint32_t attributes)
 
 void MemManage_Handler(void) 
 {
+    // Retrieve Fault Location and Type
     uint32_t fault_addr = SCB->MMFAR;
+    // Print Fault data to the Serial Terminal
+    // Write Fault data to Internal Flash for debugging
+    // Reset the System 
     NVIC_SystemReset();
 }
