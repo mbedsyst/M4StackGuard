@@ -6,14 +6,14 @@
 
 static void ConfigMPU(uint32_t base_addr, uint32_t size, uint32_t attributes);
 
-void StackGuard_Enable(void) 
+static void StackGuard_Enable(void) 
 {
     MPU->CTRL = MPU_CTRL_ENABLE_Msk | MPU_CTRL_PRIVDEFENA_Msk;
     __DSB();
     __ISB();
 }
 
-void StackGuard_Disable(void) 
+static void StackGuard_Disable(void) 
 {
     MPU->CTRL = 0;
 }
