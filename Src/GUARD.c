@@ -27,16 +27,7 @@ void StackGuard_Init(uint32_t guard_size)
     StackGuard_Enable();
 }
 
-void StackGuard_SetHandler(void (*handler)(void)) 
-{
-    if (handler)
-    {
-        SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
-        __set_MSP((uint32_t)handler);
-    }
-}
-
-static void ConfigMPU(uint32_t base_addr, uint32_t size, uint32_t attributes) 
+satic void ConfigMPU(uint32_t base_addr, uint32_t size, uint32_t attributes) 
 {
     MPU->RNR = MPU_REGION_NUMBER;
     MPU->RBAR = base_addr & MPU_RBAR_ADDR_Msk;
@@ -45,9 +36,8 @@ static void ConfigMPU(uint32_t base_addr, uint32_t size, uint32_t attributes)
                 MPU_RASR_ENABLE;
 }
 
-void MemManage_Handler(void) __attribute__((weak));
 void MemManage_Handler(void) 
 {
     uint32_t fault_addr = SCB->MMFAR;
-    while(1);
+    NVIC_SystemReset();
 }
