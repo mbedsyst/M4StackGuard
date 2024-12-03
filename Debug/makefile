@@ -33,34 +33,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := FLASH_W25Q64
+BUILD_ARTIFACT_NAME := StackGuard
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-FLASH_W25Q64.elf \
+StackGuard.elf \
 
 MAP_FILES += \
-FLASH_W25Q64.map \
+StackGuard.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-FLASH_W25Q64.list \
+StackGuard.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: FLASH_W25Q64.elf secondary-outputs
+main-build: StackGuard.elf secondary-outputs
 
 # Tool invocations
-FLASH_W25Q64.elf FLASH_W25Q64.map: $(OBJS) $(USER_OBJS) C:\Users\zalma\OneDrive\Documents\STM32F4\FLASH_W25Q64\STM32F401RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "FLASH_W25Q64.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\zalma\OneDrive\Documents\STM32F4\FLASH_W25Q64\STM32F401RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FLASH_W25Q64.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+StackGuard.elf StackGuard.map: $(OBJS) $(USER_OBJS) C:\Users\zalma\OneDrive\Documents\STM32F4\StackGuard\STM32F401RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "StackGuard.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\zalma\OneDrive\Documents\STM32F4\StackGuard\STM32F401RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="StackGuard.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -69,14 +69,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-FLASH_W25Q64.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "FLASH_W25Q64.list"
+StackGuard.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "StackGuard.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) FLASH_W25Q64.elf FLASH_W25Q64.list FLASH_W25Q64.map default.size.stdout
+	-$(RM) StackGuard.elf StackGuard.list StackGuard.map default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)

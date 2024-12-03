@@ -1,0 +1,7 @@
+..//Headers/CMSIS/Include/core_cm4.h:1938:34:__NVIC_SystemReset	1
+../Src/GUARD.c:24:13:StackGuard_Enable	1
+../Src/GUARD.c:36:13:StackGuard_Disable	1
+../Src/GUARD.c:42:13:ConfigMPU	1
+../Src/GUARD.c:56:13:RecoverCrashLog	4
+../Src/GUARD.c:85:6:StackGuard_Init	1
+../Src/GUARD.c:98:6:MemManage_Handler	4
