@@ -4,3 +4,5 @@
 ../Src/UART.c:38:6:UART2_TxChar	2
 ../Src/UART.c:46:6:UART2_TxString	2
 ../Src/UART.c:54:9:UART2_RxChar	2
+../Src/UART.c:60:5:_write	2
+../Src/UART.c:69:5:_read	3
