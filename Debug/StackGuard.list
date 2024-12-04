@@ -37,15 +37,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_macro  0000faa1  00000000  00000000  00004e4c  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00002290  00000000  00000000  000148ed  2**0
+ 17 .debug_line   00002294  00000000  00000000  000148ed  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000555cd  00000000  00000000  00016b7d  2**0
+ 18 .debug_str    000555cd  00000000  00000000  00016b81  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000043  00000000  00000000  0006c14a  2**0
+ 19 .comment      00000043  00000000  00000000  0006c14e  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00000d2c  00000000  00000000  0006c190  2**2
+ 20 .debug_frame  00000d2c  00000000  00000000  0006c194  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_line_str 00000060  00000000  00000000  0006cebc  2**0
+ 21 .debug_line_str 00000060  00000000  00000000  0006cec0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -314,7 +314,7 @@ static void RecoverCrashLog(void)
  800035c:	4293      	cmp	r3, r2
  800035e:	d14c      	bne.n	80003fa <RecoverCrashLog+0xae>
     {
-        // Print or handle the crash log as needed
+        // Print the crash log to serial terminal
         printf("Fault Address: 0x%08X\n", (unsigned int)log->faulting_address);
  8000360:	687b      	ldr	r3, [r7, #4]
  8000362:	685b      	ldr	r3, [r3, #4]
@@ -340,18 +340,18 @@ static void RecoverCrashLog(void)
  800038a:	4823      	ldr	r0, [pc, #140]	@ (8000418 <RecoverCrashLog+0xcc>)
  800038c:	f000 fab4 	bl	80008f8 <iprintf>
 
-        // Clear the crash log
+        // Unlock Flash for Erasing
         if ((FLASH->CR & FLASH_CR_LOCK) != 0)
  8000390:	4b22      	ldr	r3, [pc, #136]	@ (800041c <RecoverCrashLog+0xd0>)
  8000392:	691b      	ldr	r3, [r3, #16]
  8000394:	2b00      	cmp	r3, #0
  8000396:	da05      	bge.n	80003a4 <RecoverCrashLog+0x58>
         {
-            FLASH->KEYR = 0x45670123; // Unlock Key 1
+            FLASH->KEYR = 0x45670123;
  8000398:	4b20      	ldr	r3, [pc, #128]	@ (800041c <RecoverCrashLog+0xd0>)
  800039a:	4a21      	ldr	r2, [pc, #132]	@ (8000420 <RecoverCrashLog+0xd4>)
  800039c:	605a      	str	r2, [r3, #4]
-            FLASH->KEYR = 0xCDEF89AB; // Unlock Key 2
+            FLASH->KEYR = 0xCDEF89AB;
  800039e:	4b1f      	ldr	r3, [pc, #124]	@ (800041c <RecoverCrashLog+0xd0>)
  80003a0:	4a20      	ldr	r2, [pc, #128]	@ (8000424 <RecoverCrashLog+0xd8>)
  80003a2:	605a      	str	r2, [r3, #4]
@@ -363,37 +363,43 @@ static void RecoverCrashLog(void)
  80003a8:	4a1c      	ldr	r2, [pc, #112]	@ (800041c <RecoverCrashLog+0xd0>)
  80003aa:	f423 7340 	bic.w	r3, r3, #768	@ 0x300
  80003ae:	6113      	str	r3, [r2, #16]
-        FLASH->CR |= FLASH_CR_SER;          // Select sector erase
+        // Activate Sector Erase
+        FLASH->CR |= FLASH_CR_SER;
  80003b0:	4b1a      	ldr	r3, [pc, #104]	@ (800041c <RecoverCrashLog+0xd0>)
  80003b2:	691b      	ldr	r3, [r3, #16]
  80003b4:	4a19      	ldr	r2, [pc, #100]	@ (800041c <RecoverCrashLog+0xd0>)
  80003b6:	f043 0302 	orr.w	r3, r3, #2
  80003ba:	6113      	str	r3, [r2, #16]
-        FLASH->CR |= (7U << FLASH_CR_SNB_Pos); // Example: Sector 7
+        // Select Sector Number
+        FLASH->CR |= (7U << FLASH_CR_SNB_Pos);
  80003bc:	4b17      	ldr	r3, [pc, #92]	@ (800041c <RecoverCrashLog+0xd0>)
  80003be:	691b      	ldr	r3, [r3, #16]
  80003c0:	4a16      	ldr	r2, [pc, #88]	@ (800041c <RecoverCrashLog+0xd0>)
  80003c2:	f043 0338 	orr.w	r3, r3, #56	@ 0x38
  80003c6:	6113      	str	r3, [r2, #16]
-        FLASH->CR |= FLASH_CR_STRT;         // Start erase
+        // Start Sector Erase Operation
+        FLASH->CR |= FLASH_CR_STRT;
  80003c8:	4b14      	ldr	r3, [pc, #80]	@ (800041c <RecoverCrashLog+0xd0>)
  80003ca:	691b      	ldr	r3, [r3, #16]
  80003cc:	4a13      	ldr	r2, [pc, #76]	@ (800041c <RecoverCrashLog+0xd0>)
  80003ce:	f443 3380 	orr.w	r3, r3, #65536	@ 0x10000
  80003d2:	6113      	str	r3, [r2, #16]
-        while (FLASH->SR & FLASH_SR_BSY);   // Wait until done
+        // Wait for Erase Operation to be completed
+        while (FLASH->SR & FLASH_SR_BSY);
  80003d4:	bf00      	nop
  80003d6:	4b11      	ldr	r3, [pc, #68]	@ (800041c <RecoverCrashLog+0xd0>)
  80003d8:	68db      	ldr	r3, [r3, #12]
  80003da:	f403 3380 	and.w	r3, r3, #65536	@ 0x10000
  80003de:	2b00      	cmp	r3, #0
  80003e0:	d1f9      	bne.n	80003d6 <RecoverCrashLog+0x8a>
+        // Deactivate Sector Erase
         FLASH->CR &= ~FLASH_CR_SER;
  80003e2:	4b0e      	ldr	r3, [pc, #56]	@ (800041c <RecoverCrashLog+0xd0>)
  80003e4:	691b      	ldr	r3, [r3, #16]
  80003e6:	4a0d      	ldr	r2, [pc, #52]	@ (800041c <RecoverCrashLog+0xd0>)
  80003e8:	f023 0302 	bic.w	r3, r3, #2
  80003ec:	6113      	str	r3, [r2, #16]
+        // Lock the Flash
         FLASH->CR |= FLASH_CR_LOCK;
  80003ee:	4b0b      	ldr	r3, [pc, #44]	@ (800041c <RecoverCrashLog+0xd0>)
  80003f0:	691b      	ldr	r3, [r3, #16]
@@ -435,14 +441,16 @@ void StackGuard_Init(uint32_t guard_size)
  8000436:	687b      	ldr	r3, [r7, #4]
  8000438:	1ad3      	subs	r3, r2, r3
  800043a:	60fb      	str	r3, [r7, #12]
-    // Configure MPU
+    // Enable MPU for Configuration
     StackGuard_Disable();
  800043c:	f7ff ff4e 	bl	80002dc <StackGuard_Disable>
+    // Configure Guard Buffer with Attributes
     ConfigMPU(guard_base, guard_size, MPU_REGION_NO_ACCESS);
  8000440:	2200      	movs	r2, #0
  8000442:	6879      	ldr	r1, [r7, #4]
  8000444:	68f8      	ldr	r0, [r7, #12]
  8000446:	f7ff ff55 	bl	80002f4 <ConfigMPU>
+    // Disable MPU after configuration
     StackGuard_Enable();
  800044a:	f7ff ff2f 	bl	80002ac <StackGuard_Enable>
 }
@@ -468,7 +476,7 @@ void MemManage_Handler(void)
     __asm__("LDR %0, [SP, #24]" : "=r" (pc));
  8000468:	9b06      	ldr	r3, [sp, #24]
  800046a:	61fb      	str	r3, [r7, #28]
-    // Populate the crash log
+    // Record the Crash Log parameters
     CrashLog_t crash_log =
  800046c:	4b36      	ldr	r3, [pc, #216]	@ (8000548 <MemManage_Handler+0xec>)
  800046e:	607b      	str	r3, [r7, #4]
@@ -491,6 +499,7 @@ void MemManage_Handler(void)
         .stack_pointer = msp,
         .program_counter = pc
     };
+
     // Unlock Flash for programming
     if ((FLASH->CR & FLASH_CR_LOCK) != 0)
  8000484:	4b32      	ldr	r3, [pc, #200]	@ (8000550 <MemManage_Handler+0xf4>)
@@ -498,75 +507,85 @@ void MemManage_Handler(void)
  8000488:	2b00      	cmp	r3, #0
  800048a:	da05      	bge.n	8000498 <MemManage_Handler+0x3c>
     {
-        FLASH->KEYR = 0x45670123; // Unlock Key 1
+        FLASH->KEYR = 0x45670123;
  800048c:	4b30      	ldr	r3, [pc, #192]	@ (8000550 <MemManage_Handler+0xf4>)
  800048e:	4a31      	ldr	r2, [pc, #196]	@ (8000554 <MemManage_Handler+0xf8>)
  8000490:	605a      	str	r2, [r3, #4]
-        FLASH->KEYR = 0xCDEF89AB; // Unlock Key 2
+        FLASH->KEYR = 0xCDEF89AB;
  8000492:	4b2f      	ldr	r3, [pc, #188]	@ (8000550 <MemManage_Handler+0xf4>)
  8000494:	4a30      	ldr	r2, [pc, #192]	@ (8000558 <MemManage_Handler+0xfc>)
  8000496:	605a      	str	r2, [r3, #4]
     }
-    // Erase the reserved flash page (sector)
+    // Set Flash Operation Page Size
     FLASH->CR &= ~FLASH_CR_PSIZE;
  8000498:	4b2d      	ldr	r3, [pc, #180]	@ (8000550 <MemManage_Handler+0xf4>)
  800049a:	691b      	ldr	r3, [r3, #16]
  800049c:	4a2c      	ldr	r2, [pc, #176]	@ (8000550 <MemManage_Handler+0xf4>)
  800049e:	f423 7340 	bic.w	r3, r3, #768	@ 0x300
  80004a2:	6113      	str	r3, [r2, #16]
-    FLASH->CR |= FLASH_CR_SER;          // Select sector erase
+    // Activate Sector Erase
+    FLASH->CR |= FLASH_CR_SER;
  80004a4:	4b2a      	ldr	r3, [pc, #168]	@ (8000550 <MemManage_Handler+0xf4>)
  80004a6:	691b      	ldr	r3, [r3, #16]
  80004a8:	4a29      	ldr	r2, [pc, #164]	@ (8000550 <MemManage_Handler+0xf4>)
  80004aa:	f043 0302 	orr.w	r3, r3, #2
  80004ae:	6113      	str	r3, [r2, #16]
-    FLASH->CR |= (7U << FLASH_CR_SNB_Pos); // Example: Sector 7
+    // Select Sector Number
+    FLASH->CR |= (7U << FLASH_CR_SNB_Pos);
  80004b0:	4b27      	ldr	r3, [pc, #156]	@ (8000550 <MemManage_Handler+0xf4>)
  80004b2:	691b      	ldr	r3, [r3, #16]
  80004b4:	4a26      	ldr	r2, [pc, #152]	@ (8000550 <MemManage_Handler+0xf4>)
  80004b6:	f043 0338 	orr.w	r3, r3, #56	@ 0x38
  80004ba:	6113      	str	r3, [r2, #16]
-    FLASH->CR |= FLASH_CR_STRT;         // Start erase
+    // Start Sector Erase Operation
+    FLASH->CR |= FLASH_CR_STRT;
  80004bc:	4b24      	ldr	r3, [pc, #144]	@ (8000550 <MemManage_Handler+0xf4>)
  80004be:	691b      	ldr	r3, [r3, #16]
  80004c0:	4a23      	ldr	r2, [pc, #140]	@ (8000550 <MemManage_Handler+0xf4>)
  80004c2:	f443 3380 	orr.w	r3, r3, #65536	@ 0x10000
  80004c6:	6113      	str	r3, [r2, #16]
-    while (FLASH->SR & FLASH_SR_BSY);   // Wait until done
+    // Wait for Erase operation to be completed
+    while (FLASH->SR & FLASH_SR_BSY);
  80004c8:	bf00      	nop
  80004ca:	4b21      	ldr	r3, [pc, #132]	@ (8000550 <MemManage_Handler+0xf4>)
  80004cc:	68db      	ldr	r3, [r3, #12]
  80004ce:	f403 3380 	and.w	r3, r3, #65536	@ 0x10000
  80004d2:	2b00      	cmp	r3, #0
  80004d4:	d1f9      	bne.n	80004ca <MemManage_Handler+0x6e>
+    // Deactivate Sector Erase
     FLASH->CR &= ~FLASH_CR_SER;
  80004d6:	4b1e      	ldr	r3, [pc, #120]	@ (8000550 <MemManage_Handler+0xf4>)
  80004d8:	691b      	ldr	r3, [r3, #16]
  80004da:	4a1d      	ldr	r2, [pc, #116]	@ (8000550 <MemManage_Handler+0xf4>)
  80004dc:	f023 0302 	bic.w	r3, r3, #2
  80004e0:	6113      	str	r3, [r2, #16]
-    // Program crash log
+
+
     uint32_t *data_ptr = (uint32_t*)&crash_log;
  80004e2:	1d3b      	adds	r3, r7, #4
  80004e4:	61bb      	str	r3, [r7, #24]
+    // Writing Crash Analysis to Internal Flash
     for (uint32_t i = 0; i < sizeof(CrashLog_t) / 4; i++)
  80004e6:	2300      	movs	r3, #0
  80004e8:	627b      	str	r3, [r7, #36]	@ 0x24
  80004ea:	e021      	b.n	8000530 <MemManage_Handler+0xd4>
     {
-        FLASH->CR &= ~FLASH_CR_PG;          // Clear PG bit
+    	// Disable Flash Programming
+        FLASH->CR &= ~FLASH_CR_PG;
  80004ec:	4b18      	ldr	r3, [pc, #96]	@ (8000550 <MemManage_Handler+0xf4>)
  80004ee:	691b      	ldr	r3, [r3, #16]
  80004f0:	4a17      	ldr	r2, [pc, #92]	@ (8000550 <MemManage_Handler+0xf4>)
  80004f2:	f023 0301 	bic.w	r3, r3, #1
  80004f6:	6113      	str	r3, [r2, #16]
-        FLASH->CR |= FLASH_CR_PG;           // Enable programming
+        // Enable Flash Programming
+        FLASH->CR |= FLASH_CR_PG;
  80004f8:	4b15      	ldr	r3, [pc, #84]	@ (8000550 <MemManage_Handler+0xf4>)
  80004fa:	691b      	ldr	r3, [r3, #16]
  80004fc:	4a14      	ldr	r2, [pc, #80]	@ (8000550 <MemManage_Handler+0xf4>)
  80004fe:	f043 0301 	orr.w	r3, r3, #1
  8000502:	6113      	str	r3, [r2, #16]
-        *((uint32_t*)(CRASH_LOG_ADDRESS + i)) = data_ptr[i]; // Write word
+        // Write word of data to Flash
+        *((uint32_t*)(CRASH_LOG_ADDRESS + i)) = data_ptr[i];
  8000504:	6a7b      	ldr	r3, [r7, #36]	@ 0x24
  8000506:	009b      	lsls	r3, r3, #2
  8000508:	69ba      	ldr	r2, [r7, #24]
@@ -577,7 +596,8 @@ void MemManage_Handler(void)
  8000514:	f503 23ff 	add.w	r3, r3, #522240	@ 0x7f800
  8000518:	6812      	ldr	r2, [r2, #0]
  800051a:	601a      	str	r2, [r3, #0]
-        while (FLASH->SR & FLASH_SR_BSY);  // Wait for completion
+        // Wait for Write operation to be completed
+        while (FLASH->SR & FLASH_SR_BSY);
  800051c:	bf00      	nop
  800051e:	4b0c      	ldr	r3, [pc, #48]	@ (8000550 <MemManage_Handler+0xf4>)
  8000520:	68db      	ldr	r3, [r3, #12]
@@ -592,7 +612,7 @@ void MemManage_Handler(void)
  8000532:	2b04      	cmp	r3, #4
  8000534:	d9da      	bls.n	80004ec <MemManage_Handler+0x90>
     }
-    // Re-lock Flash
+    // Lock the Flash
     FLASH->CR |= FLASH_CR_LOCK;
  8000536:	4b06      	ldr	r3, [pc, #24]	@ (8000550 <MemManage_Handler+0xf4>)
  8000538:	691b      	ldr	r3, [r3, #16]

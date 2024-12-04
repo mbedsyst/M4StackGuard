@@ -1202,13 +1202,13 @@ LOAD C:/ST/STM32CubeIDE_1.11.2/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_macro   0x0000f766       0xff ./Src/sysmem.o
  .debug_macro   0x0000f865      0x23c ./Src/sysmem.o
 
-.debug_line     0x00000000     0x2290
- .debug_line    0x00000000      0x886 ./Src/GUARD.o
- .debug_line    0x00000886      0x659 ./Src/UART.o
- .debug_line    0x00000edf      0x50b ./Src/main.o
- .debug_line    0x000013ea      0x8ad ./Src/syscalls.o
- .debug_line    0x00001c97      0x57e ./Src/sysmem.o
- .debug_line    0x00002215       0x7b ./Startup/startup_stm32f401retx.o
+.debug_line     0x00000000     0x2294
+ .debug_line    0x00000000      0x88a ./Src/GUARD.o
+ .debug_line    0x0000088a      0x659 ./Src/UART.o
+ .debug_line    0x00000ee3      0x50b ./Src/main.o
+ .debug_line    0x000013ee      0x8ad ./Src/syscalls.o
+ .debug_line    0x00001c9b      0x57e ./Src/sysmem.o
+ .debug_line    0x00002219       0x7b ./Startup/startup_stm32f401retx.o
 
 .debug_str      0x00000000    0x555cd
  .debug_str     0x00000000    0x53202 ./Src/GUARD.o
