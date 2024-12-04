@@ -8,18 +8,69 @@
 #define MPU_REGION_NO_ACCESS    (0x00)
 #define MPU_RASR_ENABLE         (1UL << 0)
 #define CRASH_LOG_ADDRESS   	((uint32_t*)0x0807F800)
-#define CRASH_LOG_MAGIC     	0xCAFEBABE              // Identifies valid logs
+#define CRASH_LOG_MAGIC     	0xCAFEBABE
 
 
-typedef struct
+		typedef struct
+		{
+			uint32_t magic;
+			uint32_t faulting_address;
+			uint32_t fault_status;
+			uint32_t stack_pointer;
+			uint32_t program_counter;
+		} CrashLog_t;
+
+static void FLASH_Unlock(void)
 {
-    uint32_t magic;             // Validity check
-    uint32_t faulting_address;  // Address causing the fault
-    uint32_t fault_status;      // Status register (CFSR)
-    uint32_t stack_pointer;     // Main Stack Pointer at fault
-    uint32_t program_counter;   // Program Counter at fault
-} CrashLog_t;
+    if ((FLASH->CR & FLASH_CR_LOCK) != 0)
+    {
+        FLASH->KEYR = 0x45670123;
+        FLASH->KEYR = 0xCDEF89AB;
+    }
+}
 
+static void FLASH_Lock(void)
+{
+	FLASH->CR |= FLASH_CR_LOCK;
+}
+
+static void FLASH_SectorErase(uint8_t sectorNumber)
+{
+    FLASH->CR &= ~FLASH_CR_PSIZE;
+    // Activate Sector Erase
+    FLASH->CR |= FLASH_CR_SER;
+    // Select Sector Number
+    FLASH->CR |= (sectorNumber << FLASH_CR_SNB_Pos);
+    // Start Sector Erase Operation
+    FLASH->CR |= FLASH_CR_STRT;
+    // Wait for Erase Operation to be completed
+    while (FLASH->SR & FLASH_SR_BSY);
+    // Deactivate Sector Erase
+    FLASH->CR &= ~FLASH_CR_SER;
+}
+
+static void FLASH_Write(uint32_t *data, uint32_t addr, uint32_t size)
+{
+    // Writing data to flash
+    uint32_t *data_ptr = data;
+    uint32_t flash_address = addr;
+    // Loop to write each 32-bit word to flash
+    for (uint32_t i = 0; i < size / 4; i++)
+    {
+        // Wait until the flash is not BUSY
+    	while (FLASH->SR & FLASH_SR_BSY);
+        // Disable Flash Programming
+        FLASH->CR &= ~FLASH_CR_PG;
+        // Enable Flash Programming
+        FLASH->CR |= FLASH_CR_PG;
+        // Write the current word to the flash memory
+        *((uint32_t*)flash_address) = data_ptr[i];
+        // Wait for the write operation to complete
+        while (FLASH->SR & FLASH_SR_BSY);
+        // Move to the next address for the next word
+        flash_address += 4;
+    }
+}
 
 static void StackGuard_Enable(void) 
 {
@@ -65,26 +116,9 @@ static void RecoverCrashLog(void)
         printf("Stack Pointer: 0x%08X\n", (unsigned int)log->stack_pointer);
         printf("Program Counter: 0x%08X\n", (unsigned int)log->program_counter);
 
-        // Unlock Flash for Erasing
-        if ((FLASH->CR & FLASH_CR_LOCK) != 0)
-        {
-            FLASH->KEYR = 0x45670123;
-            FLASH->KEYR = 0xCDEF89AB;
-        }
-
-        FLASH->CR &= ~FLASH_CR_PSIZE;
-        // Activate Sector Erase
-        FLASH->CR |= FLASH_CR_SER;
-        // Select Sector Number
-        FLASH->CR |= (7U << FLASH_CR_SNB_Pos);
-        // Start Sector Erase Operation
-        FLASH->CR |= FLASH_CR_STRT;
-        // Wait for Erase Operation to be completed
-        while (FLASH->SR & FLASH_SR_BSY);
-        // Deactivate Sector Erase
-        FLASH->CR &= ~FLASH_CR_SER;
-        // Lock the Flash
-        FLASH->CR |= FLASH_CR_LOCK;
+        FLASH_Unlock();
+        FLASH_SectorErase(7);
+        FLASH_Lock();
     }
 }
 
@@ -118,42 +152,9 @@ void MemManage_Handler(void)
         .stack_pointer = msp,
         .program_counter = pc
     };
-
-    // Unlock Flash for programming
-    if ((FLASH->CR & FLASH_CR_LOCK) != 0)
-    {
-        FLASH->KEYR = 0x45670123;
-        FLASH->KEYR = 0xCDEF89AB;
-    }
-    // Set Flash Operation Page Size
-    FLASH->CR &= ~FLASH_CR_PSIZE;
-    // Activate Sector Erase
-    FLASH->CR |= FLASH_CR_SER;
-    // Select Sector Number
-    FLASH->CR |= (7U << FLASH_CR_SNB_Pos);
-    // Start Sector Erase Operation
-    FLASH->CR |= FLASH_CR_STRT;
-    // Wait for Erase operation to be completed
-    while (FLASH->SR & FLASH_SR_BSY);
-    // Deactivate Sector Erase
-    FLASH->CR &= ~FLASH_CR_SER;
-
-
-    uint32_t *data_ptr = (uint32_t*)&crash_log;
-    // Writing Crash Analysis to Internal Flash
-    for (uint32_t i = 0; i < sizeof(CrashLog_t) / 4; i++)
-    {
-    	// Disable Flash Programming
-        FLASH->CR &= ~FLASH_CR_PG;
-        // Enable Flash Programming
-        FLASH->CR |= FLASH_CR_PG;
-        // Write word of data to Flash
-        *((uint32_t*)(CRASH_LOG_ADDRESS + i)) = data_ptr[i];
-        // Wait for Write operation to be completed
-        while (FLASH->SR & FLASH_SR_BSY);
-    }
-    // Lock the Flash
-    FLASH->CR |= FLASH_CR_LOCK;
-    // Reset the system
+    FLASH_Unlock();
+    FLASH_SectorErase(7);
+    FLASH_Write((uint32_t*)&crash_log, CRASH_LOG_ADDRESS, sizeof(CrashLog_t));
+    FLASH_Lock();
     NVIC_SystemReset();
 }

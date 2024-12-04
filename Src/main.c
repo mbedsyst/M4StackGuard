@@ -10,7 +10,7 @@ void RecursiveFunction(int depth)
 
 int main()
 {
-	StackGuard_Init(256);
+	StackGuard_Init(512);
 
 	while(1)
 	{
