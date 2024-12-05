@@ -1,4 +1,4 @@
-Src/GUARD.o: ../Src/GUARD.c ../Inc/GUARD.h \
+Src/GUARD.o: ../Src/GUARD.c \
  ..//Headers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h \
  ..//Headers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xe.h \
  ..//Headers/CMSIS/Include/core_cm4.h \
@@ -7,8 +7,7 @@ Src/GUARD.o: ../Src/GUARD.c ../Inc/GUARD.h \
  ..//Headers/CMSIS/Include/cmsis_gcc.h \
  ..//Headers/CMSIS/Include/mpu_armv7.h \
  ..//Headers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h \
- ../Inc/UART.h
-../Inc/GUARD.h:
+ ../Inc/GUARD.h ../Inc/UART.h
 ..//Headers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h:
 ..//Headers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xe.h:
 ..//Headers/CMSIS/Include/core_cm4.h:
@@ -17,4 +16,5 @@ Src/GUARD.o: ../Src/GUARD.c ../Inc/GUARD.h \
 ..//Headers/CMSIS/Include/cmsis_gcc.h:
 ..//Headers/CMSIS/Include/mpu_armv7.h:
 ..//Headers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h:
+../Inc/GUARD.h:
 ../Inc/UART.h:

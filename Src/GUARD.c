@@ -1,3 +1,4 @@
+#include "stm32f4xx.h"
 #include "core_cm4.h"
 #include <stdio.h>
 #include "GUARD.h"
@@ -31,15 +32,18 @@ static void ConfigMPU(uint32_t base_addr, uint32_t size, uint32_t attributes)
 
 void StackGuard_Init(uint32_t guard_size) 
 {
+	UART2_Init();
 	// Calculate Guard buffer size
     extern uint32_t _estack;
     uint32_t guard_base = (uint32_t)&_estack - guard_size;
     // Configure Guard Buffer with Attributes
     ConfigMPU(guard_base, guard_size, MPU_REGION_NO_ACCESS);
+    printf("[info] Configured Memory Region with MPU\n\r");
 }
 
 void MemManage_Handler(void) 
 {
+	printf("[fault] Executing Fault Handler\n\r");
     uint32_t original_msp, msp, pc;
     // Save the current MSP
     __asm__("MRS %0, MSP" : "=r" (original_msp));
@@ -60,6 +64,7 @@ void MemManage_Handler(void)
     printf("==================================\n");
     // Restore the original MSP
     __asm__("MSR MSP, %0" :: "r" (original_msp));
+    printf("[fault] Executing System Reset\n\r");
     // Perform a system reset
     NVIC_SystemReset();
 }
