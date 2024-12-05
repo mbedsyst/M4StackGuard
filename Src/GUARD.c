@@ -17,7 +17,7 @@ static void ConfigMPU(uint32_t base_addr, uint32_t size, uint32_t attributes)
     __DSB();
     // Flush the Instruction Pipeline
     __ISB();
-	// Set Memory Region Number
+    // Set Memory Region Number
     MPU->RNR = MPU_REGION_NUMBER;
     // Set Memory Region Base Address
     MPU->RBAR = base_addr & MPU_RBAR_ADDR_Msk;
