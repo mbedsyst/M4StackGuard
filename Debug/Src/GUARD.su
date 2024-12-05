@@ -1,7 +1,4 @@
 ..//Headers/CMSIS/Include/core_cm4.h:1938:34:__NVIC_SystemReset	4	static,ignoring_inline_asm
-../Src/GUARD.c:24:13:StackGuard_Enable	4	static,ignoring_inline_asm
-../Src/GUARD.c:36:13:StackGuard_Disable	4	static
-../Src/GUARD.c:42:13:ConfigMPU	24	static
-../Src/GUARD.c:56:13:RecoverCrashLog	16	static
-../Src/GUARD.c:91:6:StackGuard_Init	24	static
-../Src/GUARD.c:106:6:MemManage_Handler	48	static,ignoring_inline_asm
+../Src/GUARD.c:12:13:ConfigMPU	24	static,ignoring_inline_asm
+../Src/GUARD.c:34:6:StackGuard_Init	24	static
+../Src/GUARD.c:43:6:MemManage_Handler	24	static,ignoring_inline_asm

@@ -164,6 +164,15 @@ SECTIONS
     __bss_end__ = _ebss;
   } >RAM
 
+  /* Fault stack section */
+  .fault_stack (NOLOAD) :
+  {
+      . = ALIGN(8);  		/* Align to 8 bytes for Cortex-M */
+      __FaultStackBase = .; /* Bottom of the fault stack */
+      . = . + 512;    		/* Reserve 512 bytes for fault stack */
+      __FaultStackTop = .;  /* Top of the fault stack */
+  } >RAM
+
   /* User_heap_stack section, used to check that there is enough "RAM" Ram  type memory left */
   ._user_heap_stack :
   {
